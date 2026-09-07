@@ -1,0 +1,28 @@
+# Environments
+.venv/
+env/
+venv/
+ENV/
+
+# Python cache
+__pycache__/
+*.py[cod]
+*.class
+.pytest_cache/
+
+# MLflow
+mlruns/
+mlartifacts/
+.trash/
+
+# Data
+data/raw.csv
+data/*.csv
+data/processed/
+
+# Secrets & IDE
+.env
+.vscode/
+.idea/
+*.db
+.last_run_id
