@@ -1,10 +1,10 @@
-# Churn Classifier with Pipelines & MLflow 🚀
+# Churn Classifier with Pipelines & MLflow
 
 Projet complet de Machine Learning Operations (MLOps) implémentant un pipeline de classification tabulaire robuste avec `scikit-learn` (`Pipeline` + `ColumnTransformer`) et un suivi intégral des expériences avec **MLflow** (paramètres, métriques, artefacts et Model Registry).
 
 ---
 
-## 📌 Vue d'ensemble du projet
+## Vue d'ensemble du projet
 
 * **Problématique Business :** Prédire le désabonnement client (*Telco Customer Churn*).
 * **Dataset :** [Telco Customer Churn](https://raw.githubusercontent.com/IBM/telco-customer-churn-on-icp4d/master/data/Telco-Customer-Churn.csv) (7 043 observations, 20 variables numériques et catégorielles).
@@ -18,7 +18,7 @@ Projet complet de Machine Learning Operations (MLOps) implémentant un pipeline 
 
 ---
 
-## 📂 Structure du projet (Repo layout)
+## Structure du projet (Repo layout)
 
 ```text
 mlops-project/
@@ -32,13 +32,16 @@ mlops-project/
 │   ├── pipeline.py              # Construction du ColumnTransformer + Modèle
 │   ├── train.py                 # Entraînement, GridSearchCV et enregistrement MLflow
 │   ├── evaluate.py              # Évaluation sur le jeu de test et génération des artefacts
+│   ├── eda.py                   # Analyse exploratoire des données (EDA)
 │   └── utils.py                 # Fonctions utilitaires (chargement YAML, nettoyage, split)
 ├── tests/
 │   └── test_pipeline.py         # Tests unitaires pour valider le pipeline
 ├── artifacts/                   # Graphiques d'évaluation (matrice de confusion, ROC, PR)
-├── Makefile                     # Automatisation (init, train, evaluate, test, lint, ui)
+├── reports/
+│   └── eda/                     # Graphiques EDA générés par src/eda.py
+├── Makefile                     # Automatisation (init, data, eda, train, evaluate, test, lint, ui)
 ├── requirements.txt             # Dépendances Python
-├── pytest.ini                   # Configuration de pytest
+├── pyproject.toml               # Configuration du projet et de ruff/pytest
 ├── .env.example                 # Variables d'environnement pour MLflow
 ├── .gitignore                   # Fichiers et dossiers exclus du versioning Git
 └── README.md                    # Documentation complète du projet
@@ -46,7 +49,7 @@ mlops-project/
 
 ---
 
-## ⚙️ Installation & Démarrage rapide
+## Installation & Démarrage rapide
 
 Toutes les opérations sont automatisées via le `Makefile`.
 
@@ -55,19 +58,32 @@ Toutes les opérations sont automatisées via le `Makefile`.
 make init
 ```
 
-### 2. Exécuter les tests unitaires et le linter
+### 2. Télécharger le dataset (Telco Customer Churn)
+Le fichier de données n'est pas versionné (gitignored). Téléchargez-le automatiquement avec :
+```bash
+make data
+```
+Cela télécharge `data/raw.csv` depuis le dépôt public IBM.
+
+### 3. Exécuter les tests unitaires et le linter
 ```bash
 make test
 make lint
 ```
 
-### 3. Entraîner et optimiser le modèle
+### 4. Explorer les données (EDA)
+Génère des graphiques d'analyse dans `reports/eda/` (distribution du churn, corrélations, taux de churn par segment) :
+```bash
+make eda
+```
+
+### 5. Entraîner et optimiser le modèle
 Lance la recherche par grille (`GridSearchCV`), enregistre les paramètres optimaux et publie le modèle dans le registre MLflow :
 ```bash
 make train
 ```
 
-### 4. Évaluer le modèle sur le jeu de test
+### 6. Évaluer le modèle sur le jeu de test
 Calcule les métriques finales (Accuracy, Precision, Recall, F1, ROC-AUC) et génère les graphiques d'analyse dans `artifacts/` :
 ```bash
 make evaluate
@@ -75,7 +91,7 @@ make evaluate
 
 ---
 
-## 📊 Résultats et Performances
+## Résultats et Performances
 
 Sur le jeu de test indépendant (`data/processed/test.csv`) :
 
@@ -95,7 +111,7 @@ Sur le jeu de test indépendant (`data/processed/test.csv`) :
 
 ---
 
-## 🖥️ Visualiser dans l'interface MLflow UI
+## Visualiser dans l'interface MLflow UI
 
 Pour explorer les runs, comparer les métriques et inspecter les artefacts dans votre navigateur :
 

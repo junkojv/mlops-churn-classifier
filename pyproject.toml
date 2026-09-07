@@ -15,6 +15,7 @@ dependencies = [
     "fastapi",
     "uvicorn",
     "pytest",
+    "httpx2",
     "ruff"
 ]
 

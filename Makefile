@@ -2,8 +2,17 @@ PY=.venv/bin/python
 ENV?=.venv
 EXP?=churn-exp
 
+.PHONY: init data eda train evaluate test lint ui clean
+
 init:
 	python3 -m venv $(ENV) && $(ENV)/bin/pip install -U pip && $(ENV)/bin/pip install -r requirements.txt
+
+data:
+	mkdir -p data && curl -L -o data/raw.csv https://raw.githubusercontent.com/IBM/telco-customer-churn-on-icp4d/master/data/Telco-Customer-Churn.csv
+	@echo "Dataset downloaded to data/raw.csv"
+
+eda:
+	PYTHONPATH=. $(PY) src/eda.py --config configs/config.yaml
 
 train:
 	PYTHONPATH=. MLFLOW_EXPERIMENT_NAME=$(EXP) $(PY) src/train.py --config configs/config.yaml
