@@ -1,6 +1,6 @@
 # Churn Classifier with Pipelines & MLflow
 
-Projet complet de Machine Learning Operations (MLOps) implémentant un pipeline de classification tabulaire robuste avec `scikit-learn` (`Pipeline` + `ColumnTransformer`) et un suivi intégral des expériences avec **MLflow** (paramètres, métriques, artefacts et Model Registry).
+Projet complet de Machine Learning Operations (MLOps) implémentant un pipeline de classification tabulaire robuste avec `scikit-learn` (`Pipeline` + `ColumnTransformer`), un suivi intégral des expériences avec **MLflow** (paramètres, métriques, artefacts et Model Registry) et un microservice de prédiction en temps réel avec **FastAPI** et **Docker**.
 
 ---
 
@@ -13,6 +13,7 @@ Projet complet de Machine Learning Operations (MLOps) implémentant un pipeline 
   * Optimisation d'hyperparamètres avec `GridSearchCV` et validation croisée stratifiée à 5 blocs (`StratifiedKFold`).
   * Traçabilité automatique des runs, des métriques et des artifacts avec **MLflow Tracking**.
   * Versioning et enregistrement du meilleur modèle dans le **MLflow Model Registry** (`ChurnClassifier`).
+  * Microservice d'inférence en temps réel avec **FastAPI** et conteneurisation **Docker**.
   * Automatisation complète des commandes via un **`Makefile`**.
   * Qualité du code assurée par des tests unitaires (`pytest`) et un linter (`ruff`).
 
@@ -23,6 +24,7 @@ Projet complet de Machine Learning Operations (MLOps) implémentant un pipeline 
 ```text
 mlops-project/
 ├── data/
+│   ├── .gitkeep                 # Maintient la structure du dossier dans Git
 │   ├── raw.csv                  # Données brutes (gitignored)
 │   └── processed/
 │       └── test.csv             # Jeu de test isolé pour l'évaluation (gitignored)
@@ -34,12 +36,16 @@ mlops-project/
 │   ├── evaluate.py              # Évaluation sur le jeu de test et génération des artefacts
 │   ├── eda.py                   # Analyse exploratoire des données (EDA)
 │   └── utils.py                 # Fonctions utilitaires (chargement YAML, nettoyage, split)
+├── service/
+│   └── app.py                   # Microservice API REST FastAPI (inférence en temps réel)
 ├── tests/
-│   └── test_pipeline.py         # Tests unitaires pour valider le pipeline
+│   ├── test_pipeline.py         # Tests unitaires pour valider le pipeline ML
+│   └── test_service.py          # Tests unitaires pour l'API FastAPI
 ├── artifacts/                   # Graphiques d'évaluation (matrice de confusion, ROC, PR)
 ├── reports/
 │   └── eda/                     # Graphiques EDA générés par src/eda.py
-├── Makefile                     # Automatisation (init, data, eda, train, evaluate, test, lint, ui)
+├── Dockerfile                   # Image Docker de production pour l'API
+├── Makefile                     # Automatisation (init, data, eda, train, evaluate, test, lint, ui, serve)
 ├── requirements.txt             # Dépendances Python
 ├── pyproject.toml               # Configuration du projet et de ruff/pytest
 ├── .env.example                 # Variables d'environnement pour MLflow
@@ -89,6 +95,12 @@ Calcule les métriques finales (Accuracy, Precision, Recall, F1, ROC-AUC) et gé
 make evaluate
 ```
 
+### 7. Démarrer le microservice d'inférence (FastAPI)
+Lance l'API REST en local sur le port 8000 :
+```bash
+make serve
+```
+
 ---
 
 ## Résultats et Performances
@@ -124,3 +136,79 @@ Puis ouvrez votre navigateur à l'adresse : **`http://localhost:5000`** (ou `htt
 Dans l'interface :
 * Cliquez sur l'expérience **`churn-exp`** pour voir l'historique des runs d'entraînement et d'évaluation.
 * Cliquez sur l'onglet **Models** pour visualiser le modèle enregistré **`ChurnClassifier`**.
+
+---
+
+## 🚀 Microservice API d'inférence (FastAPI)
+
+Le projet intègre un microservice REST de production (`service/app.py`) basé sur **FastAPI** permettant de servir des prédictions en temps réel à partir du modèle enregistré dans le **MLflow Model Registry** (`ChurnClassifier`).
+
+### 1. Démarrer le serveur API
+```bash
+make serve
+```
+Le serveur démarre sur **`http://localhost:8000`**.
+
+### 2. Documentation interactive (Swagger UI)
+Accédez à l'interface Swagger générée automatiquement pour tester interactivement l'API :
+👉 **`http://localhost:8000/docs`**
+
+### 3. Vérifier l'état de santé du service (`GET /health`)
+```bash
+curl http://localhost:8000/health
+```
+*Réponse :*
+```json
+{"status": "ok", "service": "ChurnClassifier"}
+```
+
+### 4. Faire une prédiction de Churn en temps réel (`POST /predict`)
+```bash
+curl -X POST "http://localhost:8000/predict" \
+     -H "Content-Type: application/json" \
+     -d '{
+       "tenure": 12,
+       "MonthlyCharges": 70.35,
+       "TotalCharges": 840.0,
+       "gender": "Female",
+       "SeniorCitizen": 0,
+       "Partner": "No",
+       "Dependents": "No",
+       "PhoneService": "Yes",
+       "MultipleLines": "No",
+       "InternetService": "Fiber optic",
+       "OnlineSecurity": "No",
+       "OnlineBackup": "No",
+       "DeviceProtection": "No",
+       "TechSupport": "No",
+       "StreamingTV": "No",
+       "StreamingMovies": "No",
+       "Contract": "Month-to-month",
+       "PaperlessBilling": "Yes",
+       "PaymentMethod": "Electronic check"
+     }'
+```
+*Réponse type :*
+```json
+{
+  "churn_prediction": 1,
+  "churn_label": "Yes",
+  "churn_probability": 0.6421
+}
+```
+
+---
+
+## 🐳 Déploiement avec Docker
+
+Le projet est entièrement conteneurisé pour servir l'API en production :
+
+```bash
+# 1. Construire l'image Docker
+docker build -t churn-classifier-api .
+
+# 2. Lancer le conteneur
+docker run -d -p 8000:8000 churn-classifier-api
+```
+
+L'API et la documentation Swagger sont alors directement opérationnelles sur **`http://localhost:8000/docs`**.

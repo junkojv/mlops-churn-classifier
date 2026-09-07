@@ -2,7 +2,7 @@ PY=.venv/bin/python
 ENV?=.venv
 EXP?=churn-exp
 
-.PHONY: init data eda train evaluate test lint ui clean
+.PHONY: init data eda train evaluate test lint ui serve clean
 
 init:
 	python3 -m venv $(ENV) && $(ENV)/bin/pip install -U pip && $(ENV)/bin/pip install -r requirements.txt
@@ -28,6 +28,9 @@ lint:
 
 ui:
 	$(ENV)/bin/mlflow ui --backend-store-uri sqlite:///mlflow.db --port 5000
+
+serve:
+	$(ENV)/bin/uvicorn service.app:app --host 0.0.0.0 --port 8000
 
 clean:
 	rm -rf __pycache__ src/__pycache__ tests/__pycache__ .pytest_cache
