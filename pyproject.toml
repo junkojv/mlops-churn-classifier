@@ -1,0 +1,25 @@
+[project]
+name = "mlops-churn-classifier"
+version = "0.1.0"
+description = "Pipeline MLOps de classification Telco Churn avec scikit-learn et MLflow"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "pandas",
+    "numpy",
+    "scikit-learn",
+    "mlflow",
+    "pyyaml",
+    "matplotlib",
+    "seaborn",
+    "fastapi",
+    "uvicorn",
+    "pytest",
+    "ruff"
+]
+
+[tool.ruff]
+line-length = 88
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
